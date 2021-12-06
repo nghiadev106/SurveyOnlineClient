@@ -1,0 +1,279 @@
+<div class="content">
+  <div class="container-fluid">
+    <div class="page-title-box">
+      <div class="row align-items-center">
+        <div class="col-sm-6">
+          <h4 class="page-title">Quản lý khảo sát</h4>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-right">
+            <li class="breadcrumb-item"><a [routerLink]="['/dashboard']">Home</a></li>
+            <li class="breadcrumb-item active">Quản lý khảo sát</li>
+          </ol>
+        </div>
+      </div> <!-- end row -->
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="card m-b-30">
+            <div class="card-body">
+              <div class="row mb-1">
+                <div class="col-sm-7"><button type="button" (click)="displayAdd = true"
+                    class="btn btn-success waves-effect waves-light"> <i class="mdi mdi-plus"></i>
+                    Thêm mới</button></div>
+                <div class="col-sm-5" style="display: flex;">
+                  <input class="form-control" type="search" value="{{txtSearchName}}" [(ngModel)]="txtSearchName"
+                    id="example-search-input" style="width: 90%;">
+                  <button type="button" (click)="onSearch()" class="btn btn-info waves-effect waves-light"><i
+                      class="icon-magnifier"></i></button>
+                </div>
+              </div>
+              <div class="row mb-1 mt-3">
+                <div class="col-sm-3">
+                  <label class="mr-1">Hiển thị :</label>
+                  <select class="form-control form-control-sm mr-1" [(ngModel)]="pageSize" (ngModelChange)="loadData(1)"
+                    style="width: 100px;display: inline!important;">
+                    <option [value]="10">10</option>
+                    <option [value]="15">15</option>
+                    <option [value]="20">20</option>
+                  </select>
+                </div>
+                <div class="col-sm-4">
+                  <label class="mr-1">Danh mục :</label>
+                  <select class="form-control form-control-sm mr-2" [(ngModel)]="categoryId"
+                    (ngModelChange)="loadData(1)" style="width: 250px;display: inline!important;">
+                    <option [value]="">-- Tất cả --</option>
+                    <ng-container *ngFor="let item of categories">
+                      <option [value]="item.Id">{{item.Name}}</option>
+                    </ng-container>
+                  </select>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Tên</th>
+                      <th scope="col">Số câu hỏi</th>
+                      <th scope="col">Ngày bắt đầu</th>
+                      <th scope="col">Ngày kết thúc</th>
+                      <th scope="col">Ngày tạo</th>
+                      <th scope="col">Mô tả</th>
+                      <th scope="col">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let survey of surveies; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{survey.Name}}</td>
+                      <td>{{survey.NumberOfQuestion}}</td>
+                      <td>{{survey.StartDate| date: 'dd/MM/yyyy'}}</td>
+                      <td>{{survey.EndDate| date: 'dd/MM/yyyy'}}</td>
+                      <td>{{survey.CreateDate| date: 'dd/MM/yyyy'}}</td>
+                      <td>{{survey.Description}}</td>
+                      <td>
+                        <button type="button" (click)="onGetEdit(survey.Id)" pTooltip="Sửa khảo sát"
+                          tooltipPosition="top" class="btn btn-info waves-effect waves-light mr-1"><i
+                            class="mdi mdi-pencil-outline"></i></button>
+                        <button routerLink="/admin/survey/{{survey.Id}}/question" pTooltip="Quản lý câu hỏi"
+                          tooltipPosition="top" class="btn btn-success waves-effect waves-light mr-1"><i
+                            class="mdi mdi-eye">
+                          </i></button>
+                        <button type="button" (click)="onDelete(survey.Id)" pTooltip="Xóa khảo sát"
+                          tooltipPosition="top" class="btn btn-danger waves-effect waves-light"><i
+                            class="mdi mdi-trash-can-outline"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <ngb-pagination [collectionSize]="totalRecords" [pageSize]="pageSize" [(page)]="page"
+                [boundaryLinks]="true" [maxSize]="10" [rotate]="true" (pageChange)="loadData($event)">
+              </ngb-pagination>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end page-title -->
+  </div>
+  <!-- container-fluid -->
+</div>
+
+<p-dialog [(visible)]="displayAdd" [style]="{width: '50vw'}" [position]="'top'" [dismissableMask]="true" [modal]="true">
+  <p-header>
+    Thêm mới
+  </p-header>
+  <form [formGroup]="formAdd" (ngSubmit)="onAdd()">
+    <div class="form-group">
+      <label>Tên khảo sát:</label>
+      <input type="text" class="form-control" formControlName="Name" placeholder="Tên khảo sát">
+    </div>
+    <div class="alert alert-danger" role="alert"
+      *ngIf="formAdd.controls.Name?.errors?.required && formAdd.controls.Name?.touched">
+      Tên khảo sát không được để trống!
+    </div>
+    <p class="alert alert-danger" *ngIf="formAdd.controls['Name'].hasError('maxlength')">
+      Tên khảo sát không được quá 250 ký tự.
+    </p>
+    <div class="form-group">
+      <label>Ngày bắt đầu:</label>
+      <input type="date" class="form-control" formControlName="StartDate">
+    </div>
+    <div class="form-group">
+      <label>Ngày kết thúc:</label>
+      <input type="date" class="form-control" formControlName="EndDate">
+    </div>
+    <div class="form-group">
+      <label>Số câu hỏi:</label>
+      <input type="number" class="form-control" formControlName="NumberOfQuestion">
+    </div>
+    <div class="alert alert-danger" role="alert"
+      *ngIf="formAdd.controls.NumberOfQuestion?.errors?.required && formAdd.controls.NumberOfQuestion?.touched">
+      Bạn phải nhập số câu hỏi
+    </div>
+    <p class="alert alert-danger" *ngIf="formAdd.controls['NumberOfQuestion'].hasError('min')">
+      Số câu hỏi ít nhất là 1
+    </p>
+    <p class="alert alert-danger" *ngIf="formAdd.controls['NumberOfQuestion'].hasError('max')">
+      Số câu hỏi tối đa là 10
+    </p>
+    <div class="form-group">
+      <label>Chuyên mục:</label>
+      <select class="form-control" formControlName="CategoryId">
+        <ng-container *ngFor="let item of categories">
+          <option [value]="item.Id">{{item.Name}}</option>
+        </ng-container>
+      </select>
+    </div>
+    <div class="alert alert-danger" role="alert" *ngIf="formAdd.controls.CategoryId?.errors?.required">
+      Bạn phải chọn danh mục
+    </div>
+    <div class="form-group">
+      <label>Mô tả:</label>
+      <textarea type="text" class="form-control" formControlName="Description" placeholder="Mô tả"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Trạng thái:</label>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" formControlName="Status" name="Status" [value]="1" checked>
+        <label class="form-check-label">
+          Active
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" formControlName="Status" name="Status" [value]="0">
+        <label class="form-check-label">
+          Unactive
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <div>
+        <button type="submit" [disabled]="!formAdd.valid" class="btn btn-primary waves-effect waves-light mr-2">
+          <i class="mdi mdi-check"></i>
+          Thêm
+        </button>
+        <button type="button" (click)="displayAdd = false" class="btn btn-danger waves-effect waves-light"> <i
+            class="mdi mdi-window-close"></i>
+          Huỷ</button>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog [(visible)]="displayEdit" [position]="'top'" [dismissableMask]="true" [modal]="true"
+  [style]="{width: '50vw'}">
+  <p-header>
+    Cập nhật
+  </p-header>
+  <form [formGroup]="formEdit" (ngSubmit)="onEdit()">
+    <div class="form-group">
+      <label>Tên chuyên mục:</label>
+      <input type="text" class="form-control" formControlName="Name" placeholder="Tên chuyên mục">
+    </div>
+    <div class="alert alert-danger" role="alert"
+      *ngIf="formEdit.controls.Name?.errors?.required && formEdit.controls.Name?.touched">
+      Tên khảo sát không được để trống!
+    </div>
+    <p class="alert alert-danger" *ngIf="formEdit.controls['Name'].hasError('maxlength')">
+      Tên khảo sát không được quá 250 ký tự.
+    </p>
+    <div class="form-group">
+      <label>Ngày bắt đầu:</label>
+      <input type="date" class="form-control" formControlName="StartDate">
+    </div>
+    <div class="form-group">
+      <label>Ngày kết thúc:</label>
+      <input type="date" class="form-control" formControlName="EndDate">
+    </div>
+    <div class="form-group">
+      <label>Số câu hỏi:</label>
+      <input type="number" class="form-control" formControlName="NumberOfQuestion">
+    </div>
+    <div class="alert alert-danger" role="alert"
+      *ngIf="formEdit.controls.NumberOfQuestion?.errors?.required && formEdit.controls.NumberOfQuestion?.touched">
+      Bạn phải nhập số câu hỏi
+    </div>
+    <p class="alert alert-danger" *ngIf="formEdit.controls['NumberOfQuestion'].hasError('min')">
+      Số câu hỏi ít nhất là 1
+    </p>
+    <p class="alert alert-danger" *ngIf="formEdit.controls['NumberOfQuestion'].hasError('max')">
+      Số câu hỏi tối đa là 10
+    </p>
+    <div class="form-group">
+      <label>Chuyên mục:</label>
+      <select class="form-control" formControlName="CategoryId">
+        <ng-container *ngFor="let item of categories">
+          <option [value]="item.Id">{{item.Name}}</option>
+        </ng-container>
+      </select>
+    </div>
+    <div class="alert alert-danger" role="alert" *ngIf="formEdit.controls.CategoryId?.errors?.required">
+      Bạn phải chọn danh mục
+    </div>
+    <div class="form-group">
+      <label>Mô tả:</label>
+      <textarea type="text" class="form-control" formControlName="Description" placeholder="Mô tả"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Trạng thái:</label>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" formControlName="Status" name="Status" [value]="1" checked>
+        <label class="form-check-label">
+          Active
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" formControlName="Status" name="Status" [value]="0">
+        <label class="form-check-label">
+          Unactive
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <div>
+        <button type="submit" [disabled]="!formEdit.valid" class="btn btn-primary waves-effect waves-light mr-2">
+          <i class="mdi mdi-check"></i>
+          Lưu
+        </button>
+        <button type="button" (click)="displayEdit = false" class="btn btn-danger waves-effect waves-light"> <i
+            class="mdi mdi-window-close"></i>
+          Huỷ</button>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmDialog #cd [style]="{width: '50vw'}" [baseZIndex]="10000" icon="pi pi-exclamation-triangle">
+  <p-footer>
+    <button type="button" (click)="cd.accept()" class="btn btn-primary waves-effect waves-light"> <i
+        class="mdi mdi-check"></i> Xoá</button>
+    <button type="button" (click)="cd.hide()" class="btn btn-danger waves-effect waves-light"> <i
+        class="mdi mdi-close"></i> Huỷ</button>
+  </p-footer>
+</p-confirmDialog>
+<ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#ffbe76" type="pacman">
+  <p style="font-size: 20px; color: white">Loading...</p>
+</ngx-spinner>
+<p-toast position="top-right"></p-toast>

@@ -1,0 +1,175 @@
+<div class="content">
+  <div class="container-fluid">
+    <div class="page-title-box">
+      <div class="row align-items-center">
+        <div class="col-sm-6">
+          <h4 class="page-title">Quản lý câu hỏi</h4>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-right">
+            <li class="breadcrumb-item"><a [routerLink]="['/dashboard']">Home</a></li>
+            <li class="breadcrumb-item active">Quản lý câu hỏi</li>
+          </ol>
+        </div>
+      </div> <!-- end row -->
+      <div class="row">
+        <div class="col-xl-12">
+          <div class="card m-b-30">
+            <div class="card-body">
+              <div class="row mb-1">
+                <div class="col-sm-7"><button type="button" (click)="displayAdd = true"
+                    class="btn btn-success waves-effect waves-light"> <i class="mdi mdi-plus"></i>
+                    Thêm mới</button></div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Tên</th>
+                      <th scope="col">Loại câu hỏi</th>
+                      <th scope="col">Mô tả</th>
+                      <th scope="col">Ngày tạo</th>
+                      <th scope="col">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of questions; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{item.Name}}</td>
+                      <td>{{item.QuestionTypeName}}</td>
+                      <td>{{item.Description}}</td>
+                      <td>{{item.CreateDate| date: 'dd/MM/yyyy'}}</td>
+                      <td>
+                        <button type="button" (click)="onGetEdit(item.Id)" pTooltip="Sửa câu hỏi" tooltipPosition="top"
+                          class="btn btn-info waves-effect waves-light mr-1"><i
+                            class="mdi mdi-pencil-outline"></i></button>
+                        <button routerLink="/admin/survey/{{surveyId}}/question/{{item.Id}}/answer"
+                          pTooltip="Quản lý câu hỏi" tooltipPosition="top"
+                          class="btn btn-success waves-effect waves-light mr-1"><i class="mdi mdi-eye">
+                          </i></button>
+                        <button type="button" (click)="onDelete(item.Id)" pTooltip="Xóa câu hỏi" tooltipPosition="top"
+                          class="btn btn-danger waves-effect waves-light"><i
+                            class="mdi mdi-trash-can-outline"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <button routerLink="/admin/survey" pTooltip="Danh sách khảo sát" tooltipPosition="top"
+                  class="btn btn-success waves-effect waves-light mr-1">Quay lại</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- end page-title -->
+  </div>
+  <!-- container-fluid -->
+</div>
+
+<p-dialog [(visible)]="displayAdd" [style]="{width: '50vw'}" [position]="'top'" [dismissableMask]="true" [modal]="true">
+  <p-header>
+    Thêm mới
+  </p-header>
+  <form [formGroup]="formAdd" (ngSubmit)="onAdd()">
+    <div class="form-group">
+      <label>Tên câu hỏi:</label>
+      <input type="text" class="form-control" formControlName="Name" placeholder="Tên câu hỏi">
+    </div>
+    <div class="alert alert-danger" role="alert"
+      *ngIf="formAdd.controls.Name?.errors?.required && formAdd.controls.Name?.touched">
+      Tên câu hỏi không được để trống!
+    </div>
+    <p class="alert alert-danger" *ngIf="formAdd.controls['Name'].hasError('maxlength')">
+      Tên câu hỏi không được quá 250 ký tự.
+    </p>
+    <div class="form-group">
+      <label>loại câu hỏi:</label>
+      <select class="form-control" formControlName="QuestionTypeId">
+        <ng-container *ngFor="let item of questionTypes">
+          <option [value]="item.Id">{{item.Name}}</option>
+        </ng-container>
+      </select>
+    </div>
+    <div class="alert alert-danger" role="alert" *ngIf="formAdd.controls.QuestionTypeId?.errors?.required">
+      Bạn phải chọn loại câu hỏi
+    </div>
+    <div class="form-group">
+      <label>Mô tả:</label>
+      <textarea type="text" class="form-control" formControlName="Description" placeholder="Mô tả"></textarea>
+    </div>
+    <div class="form-group">
+      <div>
+        <button type="submit" [disabled]="!formAdd.valid" class="btn btn-primary waves-effect waves-light mr-2">
+          <i class="mdi mdi-check"></i>
+          Thêm
+        </button>
+        <button type="button" (click)="displayAdd = false" class="btn btn-danger waves-effect waves-light"> <i
+            class="mdi mdi-window-close"></i>
+          Huỷ</button>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog [(visible)]="displayEdit" [position]="'top'" [dismissableMask]="true" [modal]="true"
+  [style]="{width: '50vw'}">
+  <p-header>
+    Cập nhật
+  </p-header>
+  <form [formGroup]="formEdit" (ngSubmit)="onEdit()">
+    <div class="form-group">
+      <label>Tên chuyên mục:</label>
+      <input type="text" class="form-control" formControlName="Name" placeholder="Tên chuyên mục">
+    </div>
+    <div class="alert alert-danger" role="alert"
+      *ngIf="formEdit.controls.Name?.errors?.required && formEdit.controls.Name?.touched">
+      Tên câu hỏi không được để trống!
+    </div>
+    <p class="alert alert-danger" *ngIf="formEdit.controls['Name'].hasError('maxlength')">
+      Tên câu hỏi không được quá 250 ký tự.
+    </p>
+    <div class="form-group">
+      <label>Chuyên mục:</label>
+      <select class="form-control" formControlName="QuestionTypeId">
+        <ng-container *ngFor="let item of questionTypes">
+          <option [value]="item.Id">{{item.Name}}</option>
+        </ng-container>
+      </select>
+    </div>
+    <div class="alert alert-danger" role="alert" *ngIf="formEdit.controls.QuestionTypeId?.errors?.required">
+      Bạn phải chọn loại câu hỏi
+    </div>
+    <div class="form-group">
+      <label>Mô tả:</label>
+      <textarea type="text" class="form-control" formControlName="Description" placeholder="Mô tả"></textarea>
+    </div>
+    <div class="form-group">
+      <div>
+        <button type="submit" [disabled]="!formEdit.valid" class="btn btn-primary waves-effect waves-light mr-2">
+          <i class="mdi mdi-check"></i>
+          Lưu
+        </button>
+        <button type="button" (click)="displayEdit = false" class="btn btn-danger waves-effect waves-light"> <i
+            class="mdi mdi-window-close"></i>
+          Huỷ</button>
+      </div>
+    </div>
+  </form>
+</p-dialog>
+
+<p-confirmDialog #cd [style]="{width: '50vw'}" [baseZIndex]="10000" icon="pi pi-exclamation-triangle">
+  <p-footer>
+    <button type="button" (click)="cd.accept()" class="btn btn-primary waves-effect waves-light"> <i
+        class="mdi mdi-check"></i> Xoá</button>
+    <button type="button" (click)="cd.hide()" class="btn btn-danger waves-effect waves-light"> <i
+        class="mdi mdi-close"></i> Huỷ</button>
+  </p-footer>
+</p-confirmDialog>
+<ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#ffbe76" type="pacman">
+  <p style="font-size: 20px; color: white">Loading...</p>
+</ngx-spinner>
+<p-toast position="top-right"></p-toast>
